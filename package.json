@@ -38,9 +38,14 @@
   "devDependencies": {
     "dockerfile_lint": "^0.3.2",
     "eclint": "^2.6.0",
+
     "replace": "^1.2.0",
     "semver": "^5.0.1",
+
+    "replace": "^0.3.0",
+    "semver": "^7.3.2",
+
     "urchin": "^0.0.5",
     "doctoc": "^1.2.0"
   }
-}
+} depfu/update/npm/replace-1.2.0
