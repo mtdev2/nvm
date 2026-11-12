@@ -1,0 +1,110 @@
+#!/bin/sh
+
+cleanup () {
+  rm -rf "$NVM_DIR"
+  unset -f die cleanup nvm_get_os check_version
+  unset NVM_DIR NODE_PATH
+}
+die () { echo "$@" ; cleanup ; exit 1; }
+
+: nvm.sh
+\. ../../../nvm.sh
+
+set -ex
+
+NVM_DIR=$(mktemp -d)
+NODE_PATH="$NVM_DIR/versions/node"
+mkdir -p "$NODE_PATH"
+if [ -z "$NODE_PATH" ]; then
+  die 'Unable to create temporary folder'
+fi
+
+check_version() {
+  local VERSION
+  local BINARY
+  VERSION=$1
+  BINARY=$2
+
+  # nvm_is_version_installed fails with non existing version
+  ! nvm_is_version_installed "$VERSION" || die "nvm_is_version_installed $VERSION should fail with non existing version"
+
+  # nvm_is_version_installed fails with non executable existing version
+  mkdir -p "$NODE_PATH/$VERSION/bin" && cd "$NODE_PATH/$VERSION/bin" && touch "$NODE_PATH/$VERSION/bin/$BINARY"
+  ! nvm_is_version_installed "$VERSION" || die "nvm_is_version_installed $VERSION should fail with non executable existing version"
+
+  # nvm_is_version_installed would work
+  chmod +x "$NODE_PATH/$VERSION/bin/$BINARY"
+  nvm_is_version_installed "$VERSION" || die "nvm_is_version_installed $VERSION should work"
+}
+
+# nvm_is_version_installed is available
+type nvm_is_version_installed > /dev/null 2>&1 || die 'nvm_is_version_installed is not available'
+
+# nvm_is_version_installed with no parameter fails
+! nvm_is_version_installed || die 'nvm_is_version_installed without parameter should fail'
+
+check_version '12.0.0' 'node'
+
+# the pre-0.12 layout is still found via the fallback
+OLD_VERSION='0.11.15'
+mkdir -p "$NVM_DIR/$OLD_VERSION/bin"
+touch "$NVM_DIR/$OLD_VERSION/bin/node"
+chmod +x "$NVM_DIR/$OLD_VERSION/bin/node"
+nvm_is_version_installed "$OLD_VERSION" || die "nvm_is_version_installed $OLD_VERSION should work with the pre-0.12 layout"
+
+# a pre-0.12 version does not count as installed from the modern layout
+for STRAY_VERSION in '0.10.48' 'v0.10.48'; do
+  mkdir -p "$NODE_PATH/$STRAY_VERSION/bin"
+  touch "$NODE_PATH/$STRAY_VERSION/bin/node"
+  chmod +x "$NODE_PATH/$STRAY_VERSION/bin/node"
+  ! nvm_is_version_installed "$STRAY_VERSION" || die "nvm_is_version_installed $STRAY_VERSION should not find a pre-0.12 version in the modern layout"
+done
+
+# io.js versions live in a separate tree and are still found via the fallback
+IOJS_VERSION='v2.0.0'
+mkdir -p "$NVM_DIR/versions/io.js/$IOJS_VERSION/bin"
+touch "$NVM_DIR/versions/io.js/$IOJS_VERSION/bin/node"
+chmod +x "$NVM_DIR/versions/io.js/$IOJS_VERSION/bin/node"
+nvm_is_version_installed "iojs-$IOJS_VERSION" || die "nvm_is_version_installed iojs-$IOJS_VERSION should work via the fallback"
+
+# a version that nvm_version_path rejects is never installed
+for BAD_VERSION in '..' 'v/../x' '../node/12.0.0' 'iojs-v/../x'; do
+  ! nvm_is_version_installed "$BAD_VERSION" || die "nvm_is_version_installed $BAD_VERSION should fail with a '..' path component"
+done
+
+# the modern layout is found without shelling out to detect the OS
+FAST_VERSION='14.0.0'
+! nvm_is_version_installed "$FAST_VERSION" || die "nvm_is_version_installed $FAST_VERSION should fail before it is installed"
+nvm_get_os() {
+  die 'nvm_is_version_installed must not call nvm_get_os when the modern-layout binary exists'
+}
+mkdir -p "$NODE_PATH/$FAST_VERSION/bin"
+touch "$NODE_PATH/$FAST_VERSION/bin/node"
+chmod +x "$NODE_PATH/$FAST_VERSION/bin/node"
+nvm_is_version_installed "$FAST_VERSION" || die "nvm_is_version_installed $FAST_VERSION should succeed via the fast path"
+# 0.12.x is the first version in the modern layout
+for FAST_VERSION in '0.12.18' 'v0.12.18'; do
+  mkdir -p "$NODE_PATH/$FAST_VERSION/bin"
+  touch "$NODE_PATH/$FAST_VERSION/bin/node"
+  chmod +x "$NODE_PATH/$FAST_VERSION/bin/node"
+  nvm_is_version_installed "$FAST_VERSION" || die "nvm_is_version_installed $FAST_VERSION should succeed via the fast path"
+done
+unset -f nvm_get_os
+
+# Checking for Windows
+nvm_get_os() {
+  echo "win"
+}
+check_version '13.0.0' 'node.exe'
+
+# nvm_version_path's failure must be honored, not just its (usually empty) output,
+# which would otherwise turn the check into one for `/bin/node`
+nvm_version_path() {
+  echo "$NODE_PATH/13.0.0"
+  return 3
+}
+! nvm_is_version_installed 'v/../x' || die "nvm_is_version_installed must fail when nvm_version_path fails"
+unset -f nvm_version_path
+
+
+cleanup

@@ -440,7 +440,18 @@ v10.16.3 Dubnium
 v10.17.0 Dubnium
 v10.18.0 Dubnium
 v10.18.1 Dubnium
-v10.19.0 Dubnium *
+v10.19.0 Dubnium
+v10.20.0 Dubnium
+v10.20.1 Dubnium
+v10.21.0 Dubnium
+v10.22.0 Dubnium
+v10.22.1 Dubnium
+v10.23.0 Dubnium
+v10.23.1 Dubnium
+v10.23.2 Dubnium
+v10.23.3 Dubnium
+v10.24.0 Dubnium
+v10.24.1 Dubnium *
 v11.0.0
 v11.1.0
 v11.2.0
@@ -481,7 +492,34 @@ v12.14.0 Erbium
 v12.14.1 Erbium
 v12.15.0 Erbium
 v12.16.0 Erbium
-v12.16.1 Erbium *
+v12.16.1 Erbium
+v12.16.2 Erbium
+v12.16.3 Erbium
+v12.17.0 Erbium
+v12.18.0 Erbium
+v12.18.1 Erbium
+v12.18.2 Erbium
+v12.18.3 Erbium
+v12.18.4 Erbium
+v12.19.0 Erbium
+v12.19.1 Erbium
+v12.20.0 Erbium
+v12.20.1 Erbium
+v12.20.2 Erbium
+v12.21.0 Erbium
+v12.22.0 Erbium
+v12.22.1 Erbium
+v12.22.2 Erbium
+v12.22.3 Erbium
+v12.22.4 Erbium
+v12.22.5 Erbium
+v12.22.6 Erbium
+v12.22.7 Erbium
+v12.22.8 Erbium
+v12.22.9 Erbium
+v12.22.10 Erbium
+v12.22.11 Erbium
+v12.22.12 Erbium *
 v13.0.0
 v13.0.1
 v13.1.0
@@ -494,3 +532,228 @@ v13.7.0
 v13.8.0
 v13.9.0
 v13.10.0
+v13.10.1
+v13.11.0
+v13.12.0
+v13.13.0
+v13.14.0
+v14.0.0
+v14.1.0
+v14.2.0
+v14.3.0
+v14.4.0
+v14.5.0
+v14.6.0
+v14.7.0
+v14.8.0
+v14.9.0
+v14.10.0
+v14.10.1
+v14.11.0
+v14.12.0
+v14.13.0
+v14.13.1
+v14.14.0
+v14.15.0 Fermium
+v14.15.1 Fermium
+v14.15.2 Fermium
+v14.15.3 Fermium
+v14.15.4 Fermium
+v14.15.5 Fermium
+v14.16.0 Fermium
+v14.16.1 Fermium
+v14.17.0 Fermium
+v14.17.1 Fermium
+v14.17.2 Fermium
+v14.17.3 Fermium
+v14.17.4 Fermium
+v14.17.5 Fermium
+v14.17.6 Fermium
+v14.18.0 Fermium
+v14.18.1 Fermium
+v14.18.2 Fermium
+v14.18.3 Fermium
+v14.19.0 Fermium
+v14.19.1 Fermium
+v14.19.2 Fermium
+v14.19.3 Fermium
+v14.20.0 Fermium
+v14.20.1 Fermium
+v14.21.0 Fermium
+v14.21.1 Fermium
+v14.21.2 Fermium
+v14.21.3 Fermium *
+v15.0.0
+v15.0.1
+v15.1.0
+v15.2.0
+v15.2.1
+v15.3.0
+v15.4.0
+v15.5.0
+v15.5.1
+v15.6.0
+v15.7.0
+v15.8.0
+v15.9.0
+v15.10.0
+v15.11.0
+v15.12.0
+v15.13.0
+v15.14.0
+v16.0.0
+v16.1.0
+v16.2.0
+v16.3.0
+v16.4.0
+v16.4.1
+v16.4.2
+v16.5.0
+v16.6.0
+v16.6.1
+v16.6.2
+v16.7.0
+v16.8.0
+v16.9.0
+v16.9.1
+v16.10.0
+v16.11.0
+v16.11.1
+v16.12.0
+v16.13.0 Gallium
+v16.13.1 Gallium
+v16.13.2 Gallium
+v16.14.0 Gallium
+v16.14.1 Gallium
+v16.14.2 Gallium
+v16.15.0 Gallium
+v16.15.1 Gallium
+v16.16.0 Gallium
+v16.17.0 Gallium
+v16.17.1 Gallium
+v16.18.0 Gallium
+v16.18.1 Gallium
+v16.19.0 Gallium
+v16.19.1 Gallium
+v16.20.0 Gallium
+v16.20.1 Gallium
+v16.20.2 Gallium *
+v17.0.0
+v17.0.1
+v17.1.0
+v17.2.0
+v17.3.0
+v17.3.1
+v17.4.0
+v17.5.0
+v17.6.0
+v17.7.0
+v17.7.1
+v17.7.2
+v17.8.0
+v17.9.0
+v17.9.1
+v18.0.0
+v18.1.0
+v18.2.0
+v18.3.0
+v18.4.0
+v18.5.0
+v18.6.0
+v18.7.0
+v18.8.0
+v18.9.0
+v18.9.1
+v18.10.0
+v18.11.0
+v18.12.0 Hydrogen
+v18.12.1 Hydrogen
+v18.13.0 Hydrogen
+v18.14.0 Hydrogen
+v18.14.1 Hydrogen
+v18.14.2 Hydrogen
+v18.15.0 Hydrogen
+v18.16.0 Hydrogen
+v18.16.1 Hydrogen
+v18.17.0 Hydrogen
+v18.17.1 Hydrogen
+v18.18.0 Hydrogen
+v18.18.1 Hydrogen
+v18.18.2 Hydrogen
+v18.19.0 Hydrogen
+v18.19.1 Hydrogen
+v18.20.0 Hydrogen
+v18.20.1 Hydrogen
+v18.20.2 Hydrogen
+v18.20.3 Hydrogen
+v18.20.4 Hydrogen *
+v19.0.0
+v19.0.1
+v19.1.0
+v19.2.0
+v19.3.0
+v19.4.0
+v19.5.0
+v19.6.0
+v19.6.1
+v19.7.0
+v19.8.0
+v19.8.1
+v19.9.0
+v20.0.0
+v20.1.0
+v20.2.0
+v20.3.0
+v20.3.1
+v20.4.0
+v20.5.0
+v20.5.1
+v20.6.0
+v20.6.1
+v20.7.0
+v20.8.0
+v20.8.1
+v20.9.0 Iron
+v20.10.0 Iron
+v20.11.0 Iron
+v20.11.1 Iron
+v20.12.0 Iron
+v20.12.1 Iron
+v20.12.2 Iron
+v20.13.0 Iron
+v20.13.1 Iron
+v20.14.0 Iron
+v20.15.0 Iron
+v20.15.1 Iron
+v20.16.0 Iron
+v20.17.0 Iron
+v20.18.0 Iron *
+v21.0.0
+v21.1.0
+v21.2.0
+v21.3.0
+v21.4.0
+v21.5.0
+v21.6.0
+v21.6.1
+v21.6.2
+v21.7.0
+v21.7.1
+v21.7.2
+v21.7.3
+v22.0.0
+v22.1.0
+v22.2.0
+v22.3.0
+v22.4.0
+v22.4.1
+v22.5.0
+v22.5.1
+v22.6.0
+v22.7.0
+v22.8.0
+v22.9.0
+v22.10.0
+v22.11.0 Jod *
+v23.0.0
+v23.1.0

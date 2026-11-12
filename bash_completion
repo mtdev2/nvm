@@ -8,9 +8,25 @@ fi
 
 __nvm_generate_completion() {
   declare current_word
+  declare word
+  declare glob_was_off
   current_word="${COMP_WORDS[COMP_CWORD]}"
-  # shellcheck disable=SC2207
-  COMPREPLY=($(compgen -W "$1" -- "${current_word}"))
+  # not `compgen -W`: it expands every word (including command substitution),
+  # and the words include alias and version directory names
+  COMPREPLY=()
+  glob_was_off=false
+  case $- in
+    *f*) glob_was_off=true ;;
+  esac
+  set -f
+  for word in $1; do
+    case "${word}" in
+      "${current_word}"*) COMPREPLY+=("${word}") ;;
+    esac
+  done
+  if [ "${glob_was_off}" = false ]; then
+    set +f
+  fi
   return 0
 }
 
@@ -58,7 +74,7 @@ __nvm_aliases() {
   declare aliases
   aliases=""
   if [ -d "${NVM_DIR}/alias" ]; then
-    aliases="$(cd "${NVM_DIR}/alias" && command find "${PWD}" -type f | command sed "s:${PWD}/::")"
+    aliases="$(command cd "${NVM_DIR}/alias" && command find "${PWD}" -type f | command sed "s:${PWD}/::")"
   fi
   echo "${aliases} node stable unstable iojs"
 }
@@ -84,11 +100,14 @@ __nvm() {
 # called bashcompinit that will create a complete in ZSH. If the user is in
 # ZSH, load and run bashcompinit before calling the complete function.
 if [[ -n ${ZSH_VERSION-} ]]; then
-  # Calling compinit first and then bashcompinit as mentioned by zsh man page.
-  autoload -U +X compinit && if [[ ${ZSH_DISABLE_COMPFIX-} = true ]]; then
-    compinit -u
-  else
-    compinit
+  # First calling compinit (only if not called yet!)
+  # and then bashcompinit as mentioned by zsh man page.
+  if ! command -v compinit > /dev/null; then
+    autoload -U +X compinit && if [[ ${ZSH_DISABLE_COMPFIX-} = true ]]; then
+      compinit -u
+    else
+      compinit
+    fi
   fi
   autoload -U +X bashcompinit && bashcompinit
 fi

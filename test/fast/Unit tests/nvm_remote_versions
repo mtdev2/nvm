@@ -6,35 +6,34 @@ cleanup() {
   unset -f nvm_ls_remote nvm_ls_remote_iojs
 }
 
+: nvm.sh
 \. ../../../nvm.sh
 
-OUTPUT="$(nvm_remote_versions stable 2>&1)"
-EXPECTED_OUTPUT="Implicit aliases are not supported in nvm_remote_versions."
-EXIT_CODE="$(nvm_remote_versions stable >/dev/null 2>&1; echo $?)"
-[ "_$OUTPUT" = "_$EXPECTED_OUTPUT" ] || die "implicit alias 'stable' did not error out with correct message, got $OUTPUT"
-[ "_$EXIT_CODE" = "_1" ] || die "implicit alias 'stable' did not exit with code 1, got $EXIT_CODE"
+\. ../../common.sh
 
-OUTPUT="$(nvm_remote_versions unstable 2>&1)"
+try_err nvm_remote_versions stable
 EXPECTED_OUTPUT="Implicit aliases are not supported in nvm_remote_versions."
-EXIT_CODE="$(nvm_remote_versions unstable >/dev/null 2>&1; echo $?)"
-[ "_$OUTPUT" = "_$EXPECTED_OUTPUT" ] || die "implicit alias 'unstable' did not error out with correct message, got $OUTPUT"
-[ "_$EXIT_CODE" = "_1" ] || die "implicit alias 'unstable' did not exit with code 1, got $EXIT_CODE"
+[ "_$CAPTURED_STDERR" = "_$EXPECTED_OUTPUT" ] || die "implicit alias 'stable' did not error out with correct message, got $CAPTURED_STDERR"
+[ "_$CAPTURED_EXIT_CODE" = "_1" ] || die "implicit alias 'stable' did not exit with code 1, got $CAPTURED_EXIT_CODE"
+
+try_err nvm_remote_versions unstable
+EXPECTED_OUTPUT="Implicit aliases are not supported in nvm_remote_versions."
+[ "_$CAPTURED_STDERR" = "_$EXPECTED_OUTPUT" ] || die "implicit alias 'unstable' did not error out with correct message, got $CAPTURED_STDERR"
+[ "_$CAPTURED_EXIT_CODE" = "_1" ] || die "implicit alias 'unstable' did not exit with code 1, got $CAPTURED_EXIT_CODE"
 
 nvm_ls_remote() {
   echo "N/A"
 }
-OUTPUT="$(nvm_remote_versions foo)"
-EXIT_CODE="$(nvm_remote_versions foo >/dev/null 2>&1 ; echo $?)"
-[ "_$OUTPUT" = "_N/A" ] || die "nonexistent version did not report N/A"
-[ "_$EXIT_CODE" = "_3" ] || die "nonexistent version did not exit with code 3, got $EXIT_CODE"
+try nvm_remote_versions foo
+[ "_$CAPTURED_STDOUT" = "_N/A" ] || die "nonexistent version did not report N/A"
+[ "_$CAPTURED_EXIT_CODE" = "_3" ] || die "nonexistent version did not exit with code 3, got $CAPTURED_EXIT_CODE"
 
 nvm_ls_remote_iojs() {
   echo "N/A"
 }
-OUTPUT="$(nvm_remote_versions iojs-foo)"
-EXIT_CODE="$(nvm_remote_versions iojs-foo >/dev/null 2>&1 ; echo $?)"
-[ "_$OUTPUT" = "_N/A" ] || die "nonexistent version did not report N/A"
-[ "_$EXIT_CODE" = "_3" ] || die "nonexistent version did not exit with code 3, got $EXIT_CODE"
+try nvm_remote_versions iojs-foo
+[ "_$CAPTURED_STDOUT" = "_N/A" ] || die "nonexistent version did not report N/A"
+[ "_$CAPTURED_EXIT_CODE" = "_3" ] || die "nonexistent version did not exit with code 3, got $CAPTURED_EXIT_CODE"
 
 
 nvm_ls_remote() {
@@ -48,30 +47,99 @@ nvm_ls_remote_iojs() {
   echo "iojs pattern received: _$1_"
 }
 
-OUTPUT="$(nvm_remote_versions foo)"
-EXIT_CODE="$(nvm_remote_versions foo >/dev/null 2>&1 ; echo $?)"
-[ "_$OUTPUT" = "_$(nvm_ls_remote foo)
+try nvm_remote_versions foo
+[ "_$CAPTURED_STDOUT" = "_$(nvm_ls_remote foo)
 $(nvm_ls_remote_iojs foo)" ] \
-  || die "nvm_remote_versions foo did not return contents of nvm_ls_remote foo combined with nvm_ls_remote_iojs foo; got $OUTPUT"
-[ "_$EXIT_CODE" = "_0" ] || die "nvm_remote_versions foo did not exit with 0, got $EXIT_CODE"
+  || die "nvm_remote_versions foo did not return contents of nvm_ls_remote foo combined with nvm_ls_remote_iojs foo; got $CAPTURED_STDOUT"
+[ "_$CAPTURED_EXIT_CODE" = "_0" ] || die "nvm_remote_versions foo did not exit with 0, got $CAPTURED_EXIT_CODE"
 
-OUTPUT="$(nvm_remote_versions node)"
-EXIT_CODE="$(nvm_remote_versions node >/dev/null 2>&1 ; echo $?)"
-[ "_$OUTPUT" = "_$(nvm_ls_remote)" ] \
-  || die "nvm_remote_versions node did not return contents of nvm_ls_remote; got $OUTPUT"
-[ "_$EXIT_CODE" = "_0" ] || die "nvm_remote_versions node did not exit with 0, got $EXIT_CODE"
+try nvm_remote_versions node
+[ "_$CAPTURED_STDOUT" = "_$(nvm_ls_remote)" ] \
+  || die "nvm_remote_versions node did not return contents of nvm_ls_remote; got $CAPTURED_STDOUT"
+[ "_$CAPTURED_EXIT_CODE" = "_0" ] || die "nvm_remote_versions node did not exit with 0, got $CAPTURED_EXIT_CODE"
 
-OUTPUT="$(nvm_remote_versions iojs-foo)"
-EXIT_CODE="$(nvm_remote_versions iojs-foo >/dev/null 2>&1 ; echo $?)"
-[ "_$OUTPUT" = "_$(nvm_ls_remote iojs-foo)
+try nvm_remote_versions iojs-foo
+[ "_$CAPTURED_STDOUT" = "_$(nvm_ls_remote iojs-foo)
 $(nvm_ls_remote_iojs iojs-foo)" ] \
-  || die "nvm_remote_versions iojs-foo did not return contents of nvm_ls_remote iojs-foo combined with nvm_ls_remote_iojs iojs-foo; got $OUTPUT"
-[ "_$EXIT_CODE" = "_0" ] || die "nvm_remote_versions iojs-foo did not exit with 0, got $EXIT_CODE"
+  || die "nvm_remote_versions iojs-foo did not return contents of nvm_ls_remote iojs-foo combined with nvm_ls_remote_iojs iojs-foo; got $CAPTURED_STDOUT"
+[ "_$CAPTURED_EXIT_CODE" = "_0" ] || die "nvm_remote_versions iojs-foo did not exit with 0, got $CAPTURED_EXIT_CODE"
 
-OUTPUT="$(nvm_remote_versions iojs)"
-EXIT_CODE="$(nvm_remote_versions iojs >/dev/null 2>&1 ; echo $?)"
-[ "_$OUTPUT" = "_$(nvm_ls_remote_iojs)" ] \
-  || die "nvm_remote_versions iojs did not return contents of nvm_ls_remote_iojs; got $OUTPUT"
-[ "_$EXIT_CODE" = "_0" ] || die "nvm_remote_versions iojs did not exit with 0, got $EXIT_CODE"
+try nvm_remote_versions iojs
+[ "_$CAPTURED_STDOUT" = "_$(nvm_ls_remote_iojs)" ] \
+  || die "nvm_remote_versions iojs did not return contents of nvm_ls_remote_iojs; got $CAPTURED_STDOUT"
+[ "_$CAPTURED_EXIT_CODE" = "_0" ] || die "nvm_remote_versions iojs did not exit with 0, got $CAPTURED_EXIT_CODE"
+
+# io.js only released v1 through v3, so only node is consulted for any other major
+for PATTERN in 0 0.12 v0.12.18 4 4.1 v4.0.0 9 10 v20 20.0 v20.0.0 30.1; do
+  try nvm_remote_versions "${PATTERN}"
+  [ "_$CAPTURED_STDOUT" = "_$(nvm_ls_remote "${PATTERN}")" ] \
+    || die "nvm_remote_versions ${PATTERN} did not return contents of nvm_ls_remote ${PATTERN} only; got $CAPTURED_STDOUT"
+  [ "_$CAPTURED_EXIT_CODE" = "_0" ] || die "nvm_remote_versions ${PATTERN} did not exit with 0, got $CAPTURED_EXIT_CODE"
+done
+
+for PATTERN in 1 v1 1.8 2 v2.5.0 3 3.3; do
+  try nvm_remote_versions "${PATTERN}"
+  [ "_$CAPTURED_STDOUT" = "_$(nvm_ls_remote "${PATTERN}")
+$(nvm_ls_remote_iojs "${PATTERN}")" ] \
+    || die "nvm_remote_versions ${PATTERN} did not return contents of nvm_ls_remote ${PATTERN} combined with nvm_ls_remote_iojs ${PATTERN}; got $CAPTURED_STDOUT"
+  [ "_$CAPTURED_EXIT_CODE" = "_0" ] || die "nvm_remote_versions ${PATTERN} did not exit with 0, got $CAPTURED_EXIT_CODE"
+done
+
+# io.js versions sort after node v0.x and before node v4+, even when node's list has no v4.0.0
+nvm_ls_remote() {
+  echo "v0.10.48"
+  echo "v0.12.18"
+  echo "v4.1.0"
+  echo "v20.0.0 Iron *"
+}
+nvm_ls_remote_iojs() {
+  echo "iojs-v1.0.0"
+  echo "iojs-v3.3.1"
+}
+try nvm_remote_versions foo
+[ "_$CAPTURED_STDOUT" = "_v0.10.48
+v0.12.18
+iojs-v1.0.0
+iojs-v3.3.1
+v4.1.0
+v20.0.0 Iron *" ] \
+  || die "nvm_remote_versions foo did not put io.js versions between node v0.x and node v4+; got $CAPTURED_STDOUT"
+[ "_$CAPTURED_EXIT_CODE" = "_0" ] || die "nvm_remote_versions foo did not exit with 0, got $CAPTURED_EXIT_CODE"
+
+nvm_ls_remote() {
+  echo "v4.1.0"
+  echo "v20.0.0 Iron *"
+}
+try nvm_remote_versions foo
+[ "_$CAPTURED_STDOUT" = "_iojs-v1.0.0
+iojs-v3.3.1
+v4.1.0
+v20.0.0 Iron *" ] \
+  || die "nvm_remote_versions foo did not put io.js versions before node v4+ when node has no v0.x; got $CAPTURED_STDOUT"
+[ "_$CAPTURED_EXIT_CODE" = "_0" ] || die "nvm_remote_versions foo did not exit with 0, got $CAPTURED_EXIT_CODE"
+
+nvm_ls_remote() {
+  echo "v0.10.48"
+  echo "v0.12.18"
+}
+try nvm_remote_versions foo
+[ "_$CAPTURED_STDOUT" = "_v0.10.48
+v0.12.18
+iojs-v1.0.0
+iojs-v3.3.1" ] \
+  || die "nvm_remote_versions foo did not put io.js versions after node v0.x when node has no v4+; got $CAPTURED_STDOUT"
+[ "_$CAPTURED_EXIT_CODE" = "_0" ] || die "nvm_remote_versions foo did not exit with 0, got $CAPTURED_EXIT_CODE"
+
+# io.js having no matching versions does not make a node-only pattern fail
+nvm_ls_remote() {
+  echo "v20.0.0 Iron *"
+}
+nvm_ls_remote_iojs() {
+  echo "N/A"
+  return 3
+}
+try nvm_remote_versions 20
+[ "_$CAPTURED_STDOUT" = "_v20.0.0 Iron *" ] || die "nvm_remote_versions 20 did not return node's list; got $CAPTURED_STDOUT"
+[ "_$CAPTURED_EXIT_CODE" = "_0" ] || die "nvm_remote_versions 20 did not exit with 0, got $CAPTURED_EXIT_CODE"
 
 cleanup

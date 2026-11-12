@@ -2,27 +2,28 @@
 
 die () { echo "$@" ; cleanup ; exit 1; }
 cleanup () {
-  unset -f nvm_ls_current nvm_ls
+  unset -f nvm_ls_current nvm_ls nvm_is_version_installed
 }
 
+: nvm.sh
 \. ../../../nvm.sh
+
+\. ../../common.sh
 
 nvm_ls_current() {
   echo "CURRENT!"
   return 7
 }
 
-OUTPUT="$(nvm_version current)"
+try nvm_version current
 EXPECTED_OUTPUT="CURRENT!"
-EXIT_CODE="$(nvm_version current 2>&1 >/dev/null ; echo $?)"
-[ "_$OUTPUT" = "_$EXPECTED_OUTPUT" ] || die '"nvm_version current" did not return nvm_ls_current output'
-[ "_$EXIT_CODE" = "_7" ] || die '"nvm_version current" did not return nvm_ls_current exit code'
+[ "_$CAPTURED_STDOUT" = "_$EXPECTED_OUTPUT" ] || die '"nvm_version current" did not return nvm_ls_current output'
+[ "_$CAPTURED_EXIT_CODE" = "_7" ] || die '"nvm_version current" did not return nvm_ls_current exit code'
 
-OUTPUT="$(nvm_version)"
+try nvm_version
 EXPECTED_OUTPUT="CURRENT!"
-EXIT_CODE="$(nvm_version 2>&1 >/dev/null ; echo $?)"
-[ "_$OUTPUT" = "_$EXPECTED_OUTPUT" ] || die '"nvm_version" did not return nvm_ls_current output'
-[ "_$EXIT_CODE" = "_7" ] || die '"nvm_version" did not return nvm_ls_current exit code'
+[ "_$CAPTURED_STDOUT" = "_$EXPECTED_OUTPUT" ] || die '"nvm_version" did not return nvm_ls_current output'
+[ "_$CAPTURED_EXIT_CODE" = "_7" ] || die '"nvm_version" did not return nvm_ls_current exit code'
 
 nvm_ls() {
   echo "line 1"
@@ -33,16 +34,47 @@ nvm_ls() {
 [ "_$(nvm_version node)" = "_pattern: stable" ] || die '"nvm_version node" did not pass "stable" to "nvm_ls"'
 [ "_$(nvm_version node-)" = "_pattern: stable" ] || die '"nvm_version node-" did not pass "stable" to "nvm_ls"'
 
+nvm_ls() { echo "system v20.0.0"; }
+[ "_$(nvm_version system)" = "_system" ] || die '"nvm_version system" did not return "system" when "nvm_ls" returns extra columns'
+
 nvm_ls() { echo "N/A"; }
-OUTPUT="$(nvm_version foo)"
+try nvm_version foo
 EXPECTED_OUTPUT="N/A"
-EXIT_CODE="$(nvm_version foo 2>&1 >/dev/null ; echo $?)"
-[ "_$OUTPUT" = "_$EXPECTED_OUTPUT" ] || die '"nvm_version" did not return N/A when nvm_ls returns N/A'
-[ "_$EXIT_CODE" = "_3" ] || die '"nvm_version" returning N/A did not exit code with code 3'
+[ "_$CAPTURED_STDOUT" = "_$EXPECTED_OUTPUT" ] || die '"nvm_version" did not return N/A when nvm_ls returns N/A'
+[ "_$CAPTURED_EXIT_CODE" = "_3" ] || die '"nvm_version" returning N/A did not exit code with code 3'
 
 nvm_ls() { echo; }
-OUTPUT="$(nvm_version foo)"
+try nvm_version foo
 EXPECTED_OUTPUT="N/A"
-EXIT_CODE="$(nvm_version foo 2>&1 >/dev/null ; echo $?)"
-[ "_$OUTPUT" = "_$EXPECTED_OUTPUT" ] || die '"nvm_version" did not return N/A when nvm_ls returns nothing'
-[ "_$EXIT_CODE" = "_3" ] || die '"nvm_version" returning N/A did not exit code with code 3'
+[ "_$CAPTURED_STDOUT" = "_$EXPECTED_OUTPUT" ] || die '"nvm_version" did not return N/A when nvm_ls returns nothing'
+[ "_$CAPTURED_EXIT_CODE" = "_3" ] || die '"nvm_version" returning N/A did not exit code with code 3'
+
+# an exact installed version resolves without forking "nvm_ls"
+nvm_is_version_installed() { return 0; }
+nvm_ls() { die '"nvm_version" must not call "nvm_ls" for an exact installed version'; }
+try nvm_version v1.2.3
+EXPECTED_OUTPUT="v1.2.3"
+[ "_$CAPTURED_STDOUT" = "_$EXPECTED_OUTPUT" ] || die '"nvm_version v1.2.3" did not return the version itself; got '"$CAPTURED_STDOUT"
+[ "_$CAPTURED_EXIT_CODE" = "_0" ] || die '"nvm_version v1.2.3" did not exit 0; got '"$CAPTURED_EXIT_CODE"
+
+try nvm_version v1.2.3-rc.1
+[ "_$CAPTURED_STDOUT" = "_v1.2.3-rc.1" ] || die '"nvm_version v1.2.3-rc.1" did not return the version itself; got '"$CAPTURED_STDOUT"
+
+# an exact version that is not installed still falls back to "nvm_ls"
+nvm_is_version_installed() { return 1; }
+nvm_ls() { echo "pattern: $1"; }
+try nvm_version v1.2.3
+EXPECTED_OUTPUT="pattern: v1.2.3"
+[ "_$CAPTURED_STDOUT" = "_$EXPECTED_OUTPUT" ] || die '"nvm_version v1.2.3" did not fall back to "nvm_ls"; got '"$CAPTURED_STDOUT"
+[ "_$CAPTURED_EXIT_CODE" = "_0" ] || die '"nvm_version v1.2.3" did not exit 0; got '"$CAPTURED_EXIT_CODE"
+
+# only exact, fully-qualified versions take the fast path
+nvm_is_version_installed() { die '"nvm_version" must not call "nvm_is_version_installed" for non-exact versions'; }
+nvm_ls() { echo "pattern: $1"; }
+for PATTERN in v1.2 v1 1.2.3 v1.2.3- v1.2.3-.x v1.2.3-a..b v1.2.3.4 v1.2.3.; do
+  try nvm_version "$PATTERN"
+  EXPECTED_OUTPUT="pattern: $PATTERN"
+  [ "_$CAPTURED_STDOUT" = "_$EXPECTED_OUTPUT" ] || die "nvm_version $PATTERN did not fall back to nvm_ls; got $CAPTURED_STDOUT"
+  [ "_$CAPTURED_EXIT_CODE" = "_0" ] || die "nvm_version $PATTERN did not exit 0; got $CAPTURED_EXIT_CODE"
+done
+unset -f nvm_is_version_installed

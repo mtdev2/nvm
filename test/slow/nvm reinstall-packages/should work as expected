@@ -11,12 +11,12 @@ nvm use 0.10.28
 (cd test-npmlink && npm link)
 
 EXPECTED_PACKAGES="autoprefixer bower david grunt-cli grunth-cli http-server jshint marked node-gyp npmlist postcss recursive-blame spawn-sync test-npmlink uglify-js yo"
-EXPECTED_PACKAGES_INSTALL="autoprefixer bower david@11 grunt-cli grunth-cli http-server jshint marked node-gyp npmlist postcss@7 recursive-blame spawn-sync test-npmlink uglify-js yo@1"
+EXPECTED_PACKAGES_INSTALL="autoprefixer bower david@11 grunt-cli grunth-cli http-server jshint marked node-gyp@7 npmlist postcss@4 recursive-blame spawn-sync test-npmlink uglify-js yo@1"
 
 echo "$EXPECTED_PACKAGES_INSTALL" | sed -e 's/test-npmlink //' | xargs npm install -g --quiet
 
 get_packages() {
-  npm list -g --depth=0 | \sed -e '1 d' -e 's/^.* \(.*\)@.*/\1/' -e '/^npm$/ d' | xargs
+  npm list -g --depth=0 | \sed -e '1 d' -e 's/^.* \(.*\)@.*/\1/' -e '/^npm$/ d' -e '/^corepack$/ d' | xargs
 }
 
 nvm use 0.10.29

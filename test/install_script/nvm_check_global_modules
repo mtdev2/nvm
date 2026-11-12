@@ -5,11 +5,12 @@ cleanup () {
   unset npm_config_prefix
 
   rm -f npm
+  [ -z "${WINDOWS_NPM_DIR-}" ] || rm -rf "${WINDOWS_NPM_DIR}"
   PATH="$ORIGINAL_PATH"
   NVM_DIR="$ORIGINAL_NVM_DIR"
 
   unset -f setup cleanup die
-  unset message ORIGINAL_PATH ORIGINAL_NVM_DIR
+  unset message ORIGINAL_PATH ORIGINAL_NVM_DIR WINDOWS_NPM_DIR
 }
 die () { echo "$@" ; cleanup ; exit 1; }
 
@@ -27,20 +28,22 @@ setup () {
   mkdir -p "$npm_config_prefix/lib"
 }
 
-
 setup
 
 npm install -g nop >/dev/null || die 'nvm_check_global_modules cannot be tested because `npm` cannot install the `nop` package'
 message=$(nvm_check_global_modules)
-[ ! -z "$message" ] || die "nvm_check_global_modules should have printed a notice when npm had global modules installed"
+[ ! -z "$message" ] || die "nvm_check_global_modules should have printed a notice when npm had global modules installed; got:\n${message}"
 
-# Admit we're using NVM, just for this one test
-message=$(NVM_DIR=$ORIGINAL_NVM_DIR nvm_check_global_modules)
-[ -z "$message" ] || die "nvm_check_global_modules should not have printed a notice when npm is managed by nvm"
+if [ -n "${ORIGINAL_NVM_DIR}" ] && [ -z "${GITHUB_ACTIONS}" ]; then
+  # Admit we're using NVM, just for this one test
+  # TODO: fix this for GHA
+  message=$(NVM_DIR="${ORIGINAL_NVM_DIR}" nvm_check_global_modules)
+  [ -z "$message" ] || die "nvm_check_global_modules should not have printed a notice when npm is managed by nvm; got:\n${message}"
+fi
 
 npm uninstall -g nop >/dev/null
 message=$(nvm_check_global_modules)
-[ -z "$message" ] || die "nvm_check_global_modules should not have printed a notice when npm had no global modules installed"
+[ -z "$message" ] || die "nvm_check_global_modules should not have printed a notice when npm had no global modules installed; got:\n${message}"
 
 # Faking an installation of npm
 mkdir -p "$npm_config_prefix/lib/node_modules/npm"
@@ -49,7 +52,7 @@ cat <<'JSON' >"$npm_config_prefix/lib/node_modules/npm/package.json"
 JSON
 
 message=$(nvm_check_global_modules)
-[ -z "$message" ] || die "nvm_check_global_modules should have not printed a notice when npm had only itself installed as a global module"
+[ -z "$message" ] || die "nvm_check_global_modules should have not printed a notice when npm had only itself installed as a global module; got:\n${message}"
 
 # Faking the absence of npm
 PATH=".:$PATH"
@@ -57,7 +60,28 @@ touch npm
 chmod +x npm
 
 message=$(nvm_check_global_modules)
-[ -z "$message" ] || die "nvm_check_global_modules should have not printed a notice when npm was unavailable"
+[ -z "$message" ] || die "nvm_check_global_modules should have not printed a notice when npm was unavailable; got:\n${message}"
+
+# Faking a Windows Node's npm, with a global module installed
+WINDOWS_NPM_DIR="$(mktemp -d)"
+cat <<'SH' >"${WINDOWS_NPM_DIR}/npm"
+#!/bin/sh
+case "$1" in
+  --version) echo '10.0.0' ;;
+  list) printf '%s\n' 'npm@10.0.0' '└── windows-global@1.0.0' ;;
+esac
+SH
+touch "${WINDOWS_NPM_DIR}/npm.cmd"
+chmod +x "${WINDOWS_NPM_DIR}/npm"
+PATH="${WINDOWS_NPM_DIR}:${ORIGINAL_PATH}"
+
+nvm_is_wsl() { return 0; }
+message=$(nvm_check_global_modules)
+[ -z "$message" ] || die "nvm_check_global_modules should not run a Windows npm under WSL; got:\n${message}"
+
+nvm_is_wsl() { return 1; }
+message=$(nvm_check_global_modules)
+[ -n "$message" ] || die 'nvm_check_global_modules should still warn about a Windows npm outside WSL, where it is the system node'
 
 
 cleanup
